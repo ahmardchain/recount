@@ -8,6 +8,24 @@ The glasses page is an Even Hub app. It uses `@evenrealities/even_hub_sdk` **0.0
 
 This is an entry for the DoraHacks “Heads Up: Even Realities Hackathon”, Track 04 (AI Assistants & Work), also aimed at Best Telegram. Nothing here is deployed or submitted.
 
+## Screenshots
+
+Live frames from the official Even Hub simulator.
+
+| Aisle card | Confirm |
+| --- | --- |
+| ![Aisle card: Shelf B3, Coke 50cl, expected 24](docs/screens/aisle-card.png) | ![Confirm card: 21, three short](docs/screens/count-confirm.png) |
+| One shelf at a time, expected vs count. | A second tap writes 21 (−3) to Notion. |
+
+| Summary | Sheet sent |
+| --- | --- |
+| ![Aisle summary: 3 counted, variance −5](docs/screens/aisle-summary.png) | ![Glasses card: Sheet sent to Telegram](docs/screens/sheet-sent.png) |
+| Three counted, oats skipped, variance −5. | The glasses confirm the spreadsheet went out. |
+
+![Telegram alert and aisle spreadsheet](docs/screens/telegram-sheet.png)
+
+The owner gets the shortfall text, then the aisle `.xlsx`.
+
 ## How it works
 
 1. The glasses load one location from the Shop Inventory database. In mock mode that database is built in. With a Notion token, the same screen reads the live database.
