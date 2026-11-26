@@ -1,0 +1,29 @@
+{
+  "name": "recount",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx scripts/dev.ts",
+    "build": "tsc --noEmit && vite build",
+    "start": "tsx server/index.ts",
+    "test": "tsx --test test/variance.test.ts test/parser.test.ts test/machine.test.ts test/report.test.ts test/api.test.ts test/wav.test.ts",
+    "typecheck": "tsc --noEmit",
+    "seed": "tsx scripts/seed.ts",
+    "sim": "node node_modules/@evenrealities/evenhub-simulator/bin/index.js http://127.0.0.1:4179/?demo=1 --automation-port 9898 --no-glow",
+    "demo": "tsx scripts/demo-flow.ts"
+  },
+  "dependencies": {
+    "@evenrealities/even_hub_sdk": "0.0.16"
+  },
+  "devDependencies": {
+    "@evenrealities/evenhub-simulator": "0.9.5",
+    "@types/node": "22.19.1",
+    "tsx": "4.23.15",
+    "typescript": "5.7.3",
+    "vite": "6.4.6"
+  }
+}
