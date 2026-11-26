@@ -26,6 +26,10 @@ Live frames from the official Even Hub simulator.
 
 The owner gets the shortfall text, then the aisle `.xlsx`.
 
+<img src="docs/screens/telegram-phone.jpg" alt="The Recount bot in Telegram on a phone: the Aisle B alert and the aisle spreadsheet" width="320">
+
+The same alert and spreadsheet on the owner's phone, from the live run on 26 Nov 2026.
+
 ## How it works
 
 1. The glasses load one location from the Shop Inventory database. In mock mode that database is built in. With a Notion token, the same screen reads the live database.
