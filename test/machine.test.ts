@@ -150,6 +150,7 @@ describe("ring input", () => {
     assert.equal(sending.effects[0]?.type, "send_report")
     const sent = step(sending.state, { type: "report_ok" }, now + 500)
     assert.equal(sent.state.phase, "sent")
+    assert.match(screenCopy(sent.state).hint, /Sheet sent to Telegram/)
     assert.equal(step(sent.state, { type: "gesture", gesture: "double_tap" }, now + 900).effects[0]?.type, "exit")
   })
 })

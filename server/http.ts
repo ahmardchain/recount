@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto"
 import { LOCATIONS } from "../src/logic/catalog"
 import { interpretCount, type ChatClient } from "../src/logic/parser"
 import { buildVarianceReport } from "../src/logic/report"
+import { buildAisleSheet } from "../src/logic/sheet"
 import { UNDO_GRACE_MS, UNDO_WINDOW_MS } from "../src/logic/timing"
 import type { StockItem } from "../src/logic/types"
 import { loadConfig, type RecountConfig } from "./config"
@@ -213,8 +214,14 @@ export function createRecountServer(options: { env?: NodeJS.ProcessEnv; persist?
         counted,
         skipped: items.length - counted.length,
       })
-      const message = await sink.send(text)
-      writeJson(res, 200, { mock: message.mock, text })
+      const sheet = await buildAisleSheet({ location, items })
+      const message = await sink.send({ text, sheet })
+      writeJson(res, 200, {
+        mock: message.mock,
+        text: message.text,
+        caption: message.caption,
+        sheetFile: message.sheetFile,
+      })
       return
     }
     if (req.method === "GET" && path === "/api/report/outbox") {

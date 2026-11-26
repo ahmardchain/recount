@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { cloneCatalog, LOCATIONS } from "../src/logic/catalog"
+import type { AisleSheet } from "../src/logic/sheet"
 import type { StockItem } from "../src/logic/types"
 import { variance } from "../src/logic/variance"
 import type { RecountConfig } from "./config"
@@ -22,16 +23,24 @@ export interface ReportMessage {
   at: string
   text: string
   mock: boolean
+  caption: string
+  sheetFile: string
+}
+
+export interface OutboundReport {
+  text: string
+  sheet: AisleSheet
 }
 
 export interface ReportSink {
-  send(text: string): Promise<ReportMessage>
+  send(report: OutboundReport): Promise<ReportMessage>
   outbox(): ReportMessage[]
   reset(): void
 }
 
 const memoryFile = () => join(process.cwd(), "data", "mock-inventory.json")
 const outboxFile = () => join(process.cwd(), "data", "telegram-outbox.json")
+const outboxDir = () => join(process.cwd(), "data", "outbox")
 
 export function createStore(config: RecountConfig): InventoryStore {
   if (config.notionLive) return new NotionStore(config)
@@ -172,13 +181,29 @@ class NotionStore implements InventoryStore {
 
 class MemorySink implements ReportSink {
   private messages: ReportMessage[]
+  private delivered: ReportMessage | null = null
 
   constructor(private readonly persist: boolean) {
     this.messages = this.persist ? readOutbox() : []
   }
 
-  async send(text: string): Promise<ReportMessage> {
-    const message = { at: new Date().toISOString(), text, mock: true }
+  async send(report: OutboundReport): Promise<ReportMessage> {
+    if (this.delivered) return this.delivered
+    let sheetFile = report.sheet.filename
+    if (this.persist) {
+      const path = join(outboxDir(), report.sheet.filename)
+      mkdirSync(outboxDir(), { recursive: true })
+      writeFileSync(path, report.sheet.bytes)
+      sheetFile = path
+    }
+    const message: ReportMessage = {
+      at: new Date().toISOString(),
+      text: report.text,
+      mock: true,
+      caption: report.sheet.caption,
+      sheetFile,
+    }
+    this.delivered = message
     this.messages.push(message)
     if (this.persist) writeJson(outboxFile(), this.messages)
     return message
@@ -190,6 +215,7 @@ class MemorySink implements ReportSink {
 
   reset(): void {
     this.messages = []
+    this.delivered = null
     if (this.persist) writeJson(outboxFile(), this.messages)
   }
 }
@@ -197,13 +223,16 @@ class MemorySink implements ReportSink {
 class TelegramSink implements ReportSink {
   private sent: ReportMessage | null = null
   private inflight: Promise<ReportMessage> | null = null
+  private textPosted = false
+  private filePosted = false
+  private postedText = ""
 
   constructor(private readonly config: RecountConfig) {}
 
-  async send(text: string): Promise<ReportMessage> {
+  async send(report: OutboundReport): Promise<ReportMessage> {
     if (this.sent) return this.sent
     if (this.inflight) return this.inflight
-    this.inflight = this.post(text)
+    this.inflight = this.post(report)
     try {
       this.sent = await this.inflight
       return this.sent
@@ -218,20 +247,46 @@ class TelegramSink implements ReportSink {
 
   reset(): void {}
 
-  private async post(text: string): Promise<ReportMessage> {
-    const response = await fetch(`https://api.telegram.org/bot${this.config.telegramToken}/sendMessage`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
+  private async post(report: OutboundReport): Promise<ReportMessage> {
+    if (!this.textPosted) {
+      await telegram(this.config, "sendMessage", {
         chat_id: this.config.telegramChatId,
-        text,
+        text: report.text,
         disable_web_page_preview: true,
-      }),
-    })
-    const body = await response.text()
-    if (!response.ok) throw new Error(`Telegram ${response.status}: ${body.slice(0, 240)}`)
-    return { at: new Date().toISOString(), text, mock: false }
+      })
+      this.textPosted = true
+      this.postedText = report.text
+    }
+    if (!this.filePosted) {
+      const form = new FormData()
+      form.set("chat_id", this.config.telegramChatId)
+      form.set("caption", report.sheet.caption)
+      form.set(
+        "document",
+        new Blob([new Uint8Array(report.sheet.bytes)], { type: report.sheet.mime }),
+        report.sheet.filename,
+      )
+      await telegram(this.config, "sendDocument", form)
+      this.filePosted = true
+    }
+    return {
+      at: new Date().toISOString(),
+      text: this.postedText,
+      mock: false,
+      caption: report.sheet.caption,
+      sheetFile: report.sheet.filename,
+    }
   }
+}
+
+async function telegram(config: RecountConfig, method: "sendMessage" | "sendDocument", body: FormData | Record<string, unknown>): Promise<void> {
+  const response = await fetch(`https://api.telegram.org/bot${config.telegramToken}/${method}`, {
+    method: "POST",
+    headers: body instanceof FormData ? undefined : { "content-type": "application/json" },
+    body: body instanceof FormData ? body : JSON.stringify(body),
+  })
+  const text = await response.text()
+  if (!response.ok) throw new Error(`Telegram ${response.status}: ${text.slice(0, 240)}`)
 }
 
 function readItems(): StockItem[] {

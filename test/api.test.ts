@@ -83,7 +83,7 @@ describe("mock counter service", () => {
 
     await json("/api/counts", { id: "b4", actual: 38, damaged: 1, counter: "Ada" })
     await json("/api/counts", { id: "b5", actual: 12, damaged: 0, counter: "Ada" })
-    const report = await json<{ text: string; mock: boolean }>("/api/report", {
+    const report = await json<{ text: string; mock: boolean; caption: string; sheetFile: string }>("/api/report", {
       location: "Aisle B",
       counter: "Ada",
     })
@@ -91,8 +91,17 @@ describe("mock counter service", () => {
     assert.ok(report.text.indexOf("Short") < report.text.indexOf("Even"))
     assert.match(report.text, /B3 Coke 50cl  21\/24  \(-3\)  damaged 2/)
     assert.match(report.text, /Skipped: 1/)
-    const outbox = await json<{ messages: Array<{ text: string }> }>("/api/report/outbox")
+    assert.match(report.caption, /^Recount · Aisle B · \d{1,2} [A-Z][a-z]{2} \d{4}$/)
+    assert.match(report.sheetFile, /^recount-aisle-b-\d{4}-\d{2}-\d{2}\.xlsx$/)
+    const outbox = await json<{ messages: Array<{ text: string; sheetFile: string; caption: string }> }>(
+      "/api/report/outbox",
+    )
     assert.equal(outbox.messages.at(-1)?.text, report.text)
+    assert.equal(outbox.messages.at(-1)?.sheetFile, report.sheetFile)
+    const repeat = await json<{ sheetFile: string }>("/api/report", { location: "Aisle B", counter: "Ada" })
+    assert.equal(repeat.sheetFile, report.sheetFile)
+    const once = await json<{ messages: Array<{ sheetFile: string }> }>("/api/report/outbox")
+    assert.equal(once.messages.length, 1)
 
     const wav = Buffer.from(pcm16leToWav(new Uint8Array(3200))).toString("base64")
     const queued = await json("/api/dev/voice", { transcript: "twelve", wavBase64: wav })

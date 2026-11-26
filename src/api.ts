@@ -13,6 +13,8 @@ export interface OutboxMessage {
   at: string
   text: string
   mock: boolean
+  caption?: string
+  sheetFile?: string
 }
 
 async function send(path: string, body?: unknown): Promise<Response> {
@@ -70,7 +72,10 @@ export function takeQueuedVoice(): Promise<{ transcript: string | null; wavBase6
   return send("/api/dev/voice").then((response) => asJson(response))
 }
 
-export function postReport(location: string, counter: string): Promise<{ text: string; mock: boolean }> {
+export function postReport(
+  location: string,
+  counter: string,
+): Promise<{ text: string; mock: boolean; caption: string; sheetFile: string }> {
   return send("/api/report", { location, counter }).then((response) => asJson(response))
 }
 

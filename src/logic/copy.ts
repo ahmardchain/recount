@@ -38,7 +38,7 @@ export function screenCopy(state: CountSession, now = Date.now()): ScreenCopy {
     return {
       kicker: "SENT",
       body: "REPORT SENT\n\nSHORTFALLS ARE\nWITH THE OWNER",
-      hint: "Dbl tap -> Exit",
+      hint: "Sheet sent to Telegram\nDbl tap -> Exit",
     }
   }
   if (!item) {

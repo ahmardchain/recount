@@ -26,6 +26,6 @@ const { config } = app
 app.server.listen(config.port, "0.0.0.0", () => {
   console.log(`Recount API  http://127.0.0.1:${config.port}`)
   console.log(`Notion        ${config.notionLive ? "live" : "mock"}`)
-  console.log(`Telegram      ${config.telegramLive ? "live (one alert per process)" : "mock outbox"}`)
+  console.log(`Telegram      ${config.telegramLive ? "live (one text and one sheet)" : "mock outbox"}`)
   console.log(`Count parser  ${config.llm ? `llm (${config.llmModel})` : "regex"}`)
 })

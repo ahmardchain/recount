@@ -97,13 +97,14 @@ async function main(): Promise<void> {
   await shot("09-sent.png")
 
   const outbox = (await (await fetch(`${api}/api/report/outbox`)).json()) as {
-    messages: Array<{ text: string; mock: boolean }>
+    messages: Array<{ text: string; mock: boolean; sheetFile?: string }>
   }
   if (live && outbox.messages.length !== 1) {
     throw new Error(`Expected one Telegram alert, saw ${outbox.messages.length}`)
   }
   const message = outbox.messages.at(-1)
   const text = message?.text ?? ""
+  if (!message?.sheetFile) throw new Error("Report did not include a spreadsheet")
   if (live && message?.mock !== false) throw new Error("Report stayed in the mock outbox")
   if (!text.includes("Short") || text.indexOf("B3") > text.indexOf("B5")) {
     throw new Error(`Report did not list the shortfall first:\n${text}`)

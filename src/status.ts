@@ -202,7 +202,11 @@ async function refreshOutbox(): Promise<void> {
   try {
     const messages = await getOutbox()
     const latest = messages[messages.length - 1]
-    required("#report").textContent = latest ? latest.text : "No report yet."
+    required("#report").textContent = latest
+      ? latest.caption
+        ? `${latest.text}\n\n${latest.caption}\n${latest.sheetFile ?? ""}`
+        : latest.text
+      : "No report yet."
   } catch {
     // The table already shows when the service is down.
   }
