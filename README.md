@@ -6,7 +6,10 @@ A worker in a small shop, pharmacy, café, or stockroom still counts with a clip
 
 The glasses page is an Even Hub app. It uses `@evenrealities/even_hub_sdk` **0.0.16** (Even App 2.2.10 or newer) and is exercised in `@evenrealities/evenhub-simulator` **0.9.5**. The phone WebView never talks to Notion, Telegram, or a model vendor. A small Node server holds those tokens.
 
-This is an entry for the DoraHacks “Heads Up: Even Realities Hackathon”, Track 04 (AI Assistants & Work), also aimed at Best Telegram. Nothing here is deployed or submitted.
+This is an entry for the DoraHacks “Heads Up: Even Realities Hackathon”, Track 04 (AI Assistants & Work), also aimed at Best Telegram. The DoraHacks BUIDL has not been submitted yet.
+
+- Demo video: [https://youtu.be/cBrX0zpWdnY](https://youtu.be/cBrX0zpWdnY)
+- Site: [https://recount-beryl.vercel.app](https://recount-beryl.vercel.app)
 
 ## Screenshots
 

@@ -1,6 +1,6 @@
 # DoraHacks BUIDL draft
 
-Do not submit this file as-is. The owner reviews it and posts it. Links below are placeholders.
+Do not submit this file as-is. The owner reviews it and posts it.
 
 ## Name
 
@@ -37,10 +37,11 @@ Notion uses a server-side internal integration, because Google OAuth does not wo
 
 | Field | Value |
 | --- | --- |
-| Repository | PLACEHOLDER — public git URL after the owner creates the remote |
-| Demo video | PLACEHOLDER — POV stockroom video, under 2 minutes. Script in `docs/DEMO_SCRIPT.md` |
+| Repository | https://github.com/ahmardchain/recount |
+| Demo video | https://youtu.be/cBrX0zpWdnY — official Even Hub simulator, under two minutes. Script in `docs/DEMO_SCRIPT.md` |
 | Even Hub build | PLACEHOLDER — `.ehpk` only if the owner packs and uploads it |
-| Live server | Not deployed. Mock mode runs locally with `npm run dev` |
+| Site | https://recount-beryl.vercel.app |
+| Live app server | Not deployed. Mock or live mode runs locally with `npm run dev` |
 
 ## Deadline note
 
