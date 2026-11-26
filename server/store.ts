@@ -195,9 +195,30 @@ class MemorySink implements ReportSink {
 }
 
 class TelegramSink implements ReportSink {
+  private sent: ReportMessage | null = null
+  private inflight: Promise<ReportMessage> | null = null
+
   constructor(private readonly config: RecountConfig) {}
 
   async send(text: string): Promise<ReportMessage> {
+    if (this.sent) return this.sent
+    if (this.inflight) return this.inflight
+    this.inflight = this.post(text)
+    try {
+      this.sent = await this.inflight
+      return this.sent
+    } finally {
+      this.inflight = null
+    }
+  }
+
+  outbox(): ReportMessage[] {
+    return this.sent ? [{ ...this.sent }] : []
+  }
+
+  reset(): void {}
+
+  private async post(text: string): Promise<ReportMessage> {
     const response = await fetch(`https://api.telegram.org/bot${this.config.telegramToken}/sendMessage`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -211,12 +232,6 @@ class TelegramSink implements ReportSink {
     if (!response.ok) throw new Error(`Telegram ${response.status}: ${body.slice(0, 240)}`)
     return { at: new Date().toISOString(), text, mock: false }
   }
-
-  outbox(): ReportMessage[] {
-    return []
-  }
-
-  reset(): void {}
 }
 
 function readItems(): StockItem[] {

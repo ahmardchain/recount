@@ -71,18 +71,15 @@ NOTION_PARENT_PAGE_ID=the_shared_page
 npm run seed
 ```
 
-The script creates a **Shop Inventory** database with 12 items in Aisle B, Counter, and Cold room. Put the printed id in `.env`, then:
+The script creates a **Shop Inventory** database with 12 items in Aisle B, Counter, and Cold room, and prints `NOTION_DATABASE_ID`. If that variable is already set, seed leaves the database alone.
 
-```bash
-RECOUNT_MODE=live
-NOTION_DATABASE_ID=the_printed_id
-```
+`npm run dev` with `RECOUNT_MODE=live` does the same create-and-print when `NOTION_DATABASE_ID` is empty, then serves that database. Paste the printed id into `.env` before the next start so a restart does not create a second database.
 
 Columns: Name, Location, Shelf, Expected, Actual, Variance, Damaged, Status, Counted at, Counter. A save writes the counted quantity, variance, damaged quantity, time, counter, and status. Undo within the window restores the previous values.
 
 ### Telegram
 
-Create a bot with BotFather. Put the bot token and the owner’s chat id in `.env` and set `RECOUNT_MODE=live`. The report is a plain `sendMessage`. Short rows come first.
+Create a bot with BotFather. Put `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in `.env` and set `RECOUNT_MODE=live`. The report is a plain `sendMessage`. Short rows come first. One server process sends at most one alert; a later tap returns that same message and does not post again.
 
 ### Optional speech model
 
@@ -99,7 +96,17 @@ LLM_STT_MODEL=whisper-1
 
 A WAV with no key and no transcript is refused. Queue a transcript, or a transcript plus a WAV, from the page or `POST /api/dev/voice`. Hold the ring to pull that queue. On a real headset, hold also records glasses PCM (16 kHz, 16-bit mono) and the server can send it to `{LLM_BASE_URL}/audio/transcriptions`.
 
-`RECOUNT_MODE=live` refuses to start unless the Notion token and database id are set. Telegram and the model are used when their own variables are set, and otherwise the mock outbox and the regex parser stay in place.
+`RECOUNT_MODE=live` refuses to start unless `NOTION_TOKEN` is set and either `NOTION_DATABASE_ID` or `NOTION_PARENT_PAGE_ID` is set. Telegram is used when `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are set. The model is used when `LLM_API_KEY` is set. Otherwise the mock outbox and the regex parser stay in place.
+
+Live count, with the simulator already running:
+
+```bash
+npm run dev
+npm run sim
+RECOUNT_MODE=live npm run demo
+```
+
+`npm run demo` drives the same three-item aisle. In live mode it writes those counts to Notion and checks that exactly one Telegram alert was posted.
 
 ## Judging
 
@@ -129,8 +136,8 @@ scripts/demo-flow.ts
 | `npm test` | Variance, parser, ring state machine, report order, mock API |
 | `npm run dev` | API on port 4187 and the page on port 4179 |
 | `npm run sim` | Simulator against the page, automation on port 9898 |
-| `npm run demo` | Count three Aisle B items and send the mock report |
-| `npm run seed` | Create the Notion database |
+| `npm run demo` | Count three Aisle B items. Mock mode files the report locally. Live mode writes Notion and sends one Telegram alert. |
+| `npm run seed` | Create the Notion database under `NOTION_PARENT_PAGE_ID` when `NOTION_DATABASE_ID` is empty |
 | `npm run build && npm start` | Typecheck, build the page, serve it from the API |
 
 ## Limitations

@@ -49,3 +49,13 @@ export function loadConfig(
     persist: options.persist ?? true,
   }
 }
+
+/** Live Notion uses a database id when set, otherwise a parent page to create one. */
+export function liveNotionSource(
+  config: Pick<RecountConfig, "notionToken" | "notionDatabaseId" | "notionParentPageId">,
+): "database" | "parent" | "missing" {
+  if (!config.notionToken) return "missing"
+  if (config.notionDatabaseId) return "database"
+  if (config.notionParentPageId) return "parent"
+  return "missing"
+}

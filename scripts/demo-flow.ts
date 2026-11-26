@@ -1,5 +1,8 @@
 import { mkdirSync, writeFileSync } from "node:fs"
+import { applyEnvFile } from "../server/envfile"
 import { compositeGlassesPng } from "./glasses-png"
+
+applyEnvFile()
 
 const api = "http://127.0.0.1:4187"
 const sim = "http://127.0.0.1:9898"
@@ -28,7 +31,25 @@ async function main(): Promise<void> {
     await sleep(200)
   }
   if (!up) throw new Error("Simulator automation port is not up")
-  await fetch(`${api}/api/dev/reset`, { method: "POST" })
+
+  const healthResponse = await fetch(`${api}/api/health`)
+  if (!healthResponse.ok) throw new Error("Recount API is not up. Start it with npm run dev.")
+  const health = (await healthResponse.json()) as {
+    mode?: string
+    notion?: string
+    telegram?: string
+  }
+  const live = health.mode === "live"
+  if (process.env.RECOUNT_MODE === "live" && !live) {
+    throw new Error("RECOUNT_MODE=live but the API is still mock. Restart npm run dev so it reloads .env.")
+  }
+  if (live && (health.notion !== "notion" || health.telegram !== "telegram")) {
+    throw new Error("Live demo needs Notion and Telegram. Set NOTION_TOKEN, NOTION_PARENT_PAGE_ID or NOTION_DATABASE_ID, TELEGRAM_BOT_TOKEN, and TELEGRAM_CHAT_ID.")
+  }
+  if (!live) {
+    const reset = await fetch(`${api}/api/dev/reset`, { method: "POST" })
+    if (!reset.ok) throw new Error(`Could not reset the mock shop (${reset.status})`)
+  }
 
   let since = 0
   await waitFor("screen loading", 20000)
@@ -76,14 +97,19 @@ async function main(): Promise<void> {
   await shot("09-sent.png")
 
   const outbox = (await (await fetch(`${api}/api/report/outbox`)).json()) as {
-    messages: Array<{ text: string }>
+    messages: Array<{ text: string; mock: boolean }>
   }
-  const text = outbox.messages.at(-1)?.text ?? ""
+  if (live && outbox.messages.length !== 1) {
+    throw new Error(`Expected one Telegram alert, saw ${outbox.messages.length}`)
+  }
+  const message = outbox.messages.at(-1)
+  const text = message?.text ?? ""
+  if (live && message?.mock !== false) throw new Error("Report stayed in the mock outbox")
   if (!text.includes("Short") || text.indexOf("B3") > text.indexOf("B5")) {
     throw new Error(`Report did not list the shortfall first:\n${text}`)
   }
   if (!text.includes("Variance: -5")) throw new Error(`Expected variance -5\n${text}`)
-  console.log("Demo flow passed. Report:\n")
+  console.log(live ? "Live demo passed. One Telegram alert:\n" : "Demo flow passed. Report:\n")
   console.log(text)
 
   async function press(action: string, settle = 450): Promise<void> {

@@ -10,7 +10,7 @@
     "dev": "tsx scripts/dev.ts",
     "build": "tsc --noEmit && vite build",
     "start": "tsx server/index.ts",
-    "test": "tsx --test test/variance.test.ts test/parser.test.ts test/machine.test.ts test/report.test.ts test/api.test.ts test/wav.test.ts",
+    "test": "tsx --test test/variance.test.ts test/parser.test.ts test/machine.test.ts test/report.test.ts test/api.test.ts test/wav.test.ts test/config.test.ts test/telegram.test.ts",
     "typecheck": "tsc --noEmit",
     "seed": "tsx scripts/seed.ts",
     "sim": "node node_modules/@evenrealities/evenhub-simulator/bin/index.js http://127.0.0.1:4179/?demo=1 --automation-port 9898 --no-glow",
