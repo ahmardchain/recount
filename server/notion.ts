@@ -21,20 +21,28 @@ export async function notionFetch(
   path: string,
   init: { method?: string; body?: unknown } = {},
 ): Promise<unknown> {
-  const response = await fetch(`https://api.notion.com/v1${path}`, {
-    method: init.method ?? "GET",
-    headers: {
-      authorization: `Bearer ${token}`,
-      "notion-version": NOTION_VERSION,
-      "content-type": "application/json",
-    },
-    body: init.body === undefined ? undefined : JSON.stringify(init.body),
-  })
-  const text = await response.text()
-  if (!response.ok) {
-    throw new Error(`Notion ${response.status}: ${text.slice(0, 280)}`)
+  let last = "Notion request failed"
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const response = await fetch(`https://api.notion.com/v1${path}`, {
+      method: init.method ?? "GET",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "notion-version": NOTION_VERSION,
+        "content-type": "application/json",
+      },
+      body: init.body === undefined ? undefined : JSON.stringify(init.body),
+    })
+    const text = await response.text()
+    if (response.ok) {
+      return text ? JSON.parse(text) : {}
+    }
+    last = `Notion ${response.status}: ${text.slice(0, 280)}`
+    if (response.status !== 429) break
+    const retryAfter = Number(response.headers.get("retry-after") || "1")
+    const waitMs = Math.min(20000, Math.max(1000, (Number.isFinite(retryAfter) ? retryAfter : 1) * 1000) + attempt * 500)
+    await new Promise((resolve) => setTimeout(resolve, waitMs))
   }
-  return text ? JSON.parse(text) : {}
+  throw new Error(last)
 }
 
 export function pageToItem(page: NotionPage): StockItem | null {

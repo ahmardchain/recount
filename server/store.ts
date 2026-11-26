@@ -117,6 +117,9 @@ class MemoryStore implements InventoryStore {
 }
 
 class NotionStore implements InventoryStore {
+  private listCache = new Map<string, { at: number; items: StockItem[] }>()
+  private readonly listTtlMs = 12_000
+
   constructor(private readonly config: RecountConfig) {}
 
   async locations(): Promise<string[]> {
@@ -124,7 +127,18 @@ class NotionStore implements InventoryStore {
   }
 
   async list(location: string): Promise<StockItem[]> {
-    return queryLocation(this.config.notionToken, this.config.notionDatabaseId, location)
+    const hit = this.listCache.get(location)
+    if (hit && Date.now() - hit.at < this.listTtlMs) {
+      return hit.items.map((item) => ({ ...item }))
+    }
+    const items = await queryLocation(this.config.notionToken, this.config.notionDatabaseId, location)
+    this.listCache.set(location, { at: Date.now(), items })
+    return items.map((item) => ({ ...item }))
+  }
+
+  private invalidateList(location?: string): void {
+    if (location) this.listCache.delete(location)
+    else this.listCache.clear()
   }
 
   async get(id: string): Promise<StockItem | null> {
@@ -159,6 +173,7 @@ class NotionStore implements InventoryStore {
       countedAt: next.countedAt,
       counter: next.counter,
     })
+    this.invalidateList(previous.location)
     return { item: next, previous }
   }
 
@@ -171,6 +186,7 @@ class NotionStore implements InventoryStore {
       countedAt: previous.countedAt,
       counter: previous.counter,
     })
+    this.invalidateList(previous.location)
     return { ...previous }
   }
 
