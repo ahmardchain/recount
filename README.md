@@ -33,6 +33,10 @@ The owner gets the shortfall text, then the aisle `.xlsx`.
 
 The same alert and spreadsheet on the owner's phone, from the live run on 26 Nov 2026.
 
+<img src="docs/screens/spreadsheet-phone.jpg" alt="The aisle spreadsheet opened on the owner's phone" width="320">
+
+The aisle spreadsheet opened on the owner's phone.
+
 ## How it works
 
 1. The glasses load one location from the Shop Inventory database. In mock mode that database is built in. With a Notion token, the same screen reads the live database.
