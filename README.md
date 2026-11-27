@@ -25,6 +25,15 @@ The glasses page is an Even Hub app. It uses `@evenrealities/even_hub_sdk` **0.0
 
 Aisle card from the Even Hub simulator 0.9.5, at the G2 display size of 576×288 monochrome. Captured during the official demo flow. This is the simulator, not a headset run.
 
+## Why glasses, not a phone
+
+A phone already has a counting app. The problem is the moment the counting happens.
+
+- **Hands stay on the stock.** A phone needs a free hand to hold and type. On the glasses, the expected number sits in view and the ring changes the count, so both hands keep moving boxes.
+- **Eyes stay on the shelf.** Looking down at a screen between every item breaks the count and is where mistakes slip in. The lens shows one item and one number at a time, right next to the shelf.
+- **Nothing to put down or pick up.** No unlocking, no wiping dusty fingers on a screen, and no phone balanced on a box in a cold room or a busy back room.
+- **The phone still has a job.** It's where the owner gets the Telegram alert and the spreadsheet. The worker counts on the glasses, and the owner reads the result on the phone.
+
 ## Live Telegram report
 
 From the live run on 26 Nov 2026: the owner’s phone received the Aisle B alert, then the aisle `.xlsx`.
