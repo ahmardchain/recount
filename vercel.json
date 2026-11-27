@@ -1,4 +1,8 @@
 {
   "framework": null,
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+  "functions": {
+    "api/[[...path]].ts": {
+      "maxDuration": 30
+    }
+  }
 }

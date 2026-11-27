@@ -41,7 +41,8 @@ Notion uses a server-side internal integration, because Google OAuth does not wo
 | Demo video | https://youtu.be/Hj2fdArDaIg — official Even Hub simulator, under two minutes. Script in `docs/DEMO_SCRIPT.md` |
 | Even Hub build | PLACEHOLDER — `.ehpk` only if the owner packs and uploads it |
 | Site | https://recount-beryl.vercel.app |
-| Live app server | Not deployed. Mock or live mode runs locally with `npm run dev` |
+| Live glasses page | https://recount-beryl.vercel.app/glasses/?demo=1 |
+| Live mock API | https://recount-beryl.vercel.app/api/health |
 
 ## Deadline note
 

@@ -18,12 +18,57 @@ Submitted on 26 Nov 2026 to the DoraHacks “Heads Up: Even Realities Hackathon�
 
 - Demo video: [https://youtu.be/Hj2fdArDaIg](https://youtu.be/Hj2fdArDaIg)
 - Site: [https://recount-beryl.vercel.app](https://recount-beryl.vercel.app)
+- Live glasses page: [https://recount-beryl.vercel.app/glasses/?demo=1](https://recount-beryl.vercel.app/glasses/?demo=1)
+- Live mock API: [https://recount-beryl.vercel.app/api/health](https://recount-beryl.vercel.app/api/health)
 
 The glasses page is an Even Hub app. It uses `@evenrealities/even_hub_sdk` **0.0.16** (Even App 2.2.10 or newer) and is exercised in `@evenrealities/evenhub-simulator` **0.9.5**. The phone WebView never talks to Notion, Telegram, or a model vendor. A small Node server holds those tokens.
 
 ![Aisle card on the Even Hub simulator, 576 by 288: Shelf B3, Coke 50cl, expected 24, count 24](docs/screens/02-item.png)
 
 Aisle card from the Even Hub simulator 0.9.5, at the G2 display size of 576×288 monochrome. Captured during the official demo flow. This is the simulator, not a headset run.
+
+
+## For judges
+
+### A 60-second path
+
+1. Open the [site](https://recount-beryl.vercel.app). This is the marketing page, with live Telegram phone photos further down.
+2. Click **Try the live demo**, or open the [glasses page](https://recount-beryl.vercel.app/glasses/?demo=1) directly. That is the Even Hub app and the shop view beside it, talking to the mock API on the same origin. It is a browser page, not a G2 headset run. Ring gestures need the Even Hub simulator, which you can start locally (see [Run locally](#run-locally)).
+3. Open [https://recount-beryl.vercel.app/api/health](https://recount-beryl.vercel.app/api/health). It should return `ok: true` and `mode: "mock"` (sample shop data, no Notion or Telegram keys on this host).
+4. Watch the [demo video](https://youtu.be/Hj2fdArDaIg) (official Even Hub simulator, with captions).
+5. Look at the [proof table](#proof) and the official [criteria](#official-criteria) below.
+
+### Live links
+
+| | |
+| --- | --- |
+| Site | https://recount-beryl.vercel.app |
+| Glasses page | https://recount-beryl.vercel.app/glasses/?demo=1 |
+| Mock API health | https://recount-beryl.vercel.app/api/health |
+| Demo video | https://youtu.be/Hj2fdArDaIg |
+| CI | https://github.com/ahmardchain/recount/actions/workflows/ci.yml |
+| Repository | https://github.com/ahmardchain/recount |
+
+### Proof
+
+| Claim | Evidence |
+| --- | --- |
+| The public API is up, in mock mode, with the regex parser | [GET /api/health](https://recount-beryl.vercel.app/api/health) returns `{"ok":true,"mode":"mock","notion":"mock","telegram":"mock","parser":"regex","stt":"none"}` |
+| Sample aisle data is the built-in catalog | [GET /api/inventory?location=Aisle%20B](https://recount-beryl.vercel.app/api/inventory?location=Aisle%20B) returns four items; the first is `b3`, Coke 50cl |
+| A mock aisle report is an `.xlsx` workbook | `POST /api/report` with `{"location":"Aisle B","counter":"Counter"}` returns `sheetFile` ending in `.xlsx` |
+| The owner’s phone received a Telegram alert and the aisle spreadsheet | Photos from the live run on 26 Nov 2026: [telegram-phone.jpg](docs/screens/telegram-phone.jpg), [spreadsheet-phone.jpg](docs/screens/spreadsheet-phone.jpg) |
+| The lens layout is 576×288 monochrome in the official simulator | [02-item.png](docs/screens/02-item.png), captured during the official demo flow. This is the simulator, not a headset run |
+| Typecheck, build, and tests run in CI | [CI badge](https://github.com/ahmardchain/recount/actions/workflows/ci.yml); `npm test` lists 22 tests in `package.json` |
+
+### Official criteria
+
+| Criterion | Weight | What to look at |
+| --- | --- | --- |
+| Usefulness on G2 | 30% | Both hands stay on the stock. One item and one number on the lens; the R1 ring changes the count. That path does not need a microphone. |
+| Read and write | 25% | The aisle is read from Notion (or the built-in mock shop). A confirmed count is written back. The owner gets a Telegram `sendMessage`, shortages first, then the aisle `.xlsx` with `sendDocument`. |
+| Technical execution | 20% | SDK 0.0.16, a packable `.ehpk` (`npm run pack`), a live HTTPS API on the same Vercel origin as the site, 22 tests and GitHub Actions CI. Mock mode needs no keys. |
+| UX for display and voice | 15% | 576×288 monochrome. Scroll, tap, double-tap, and an optional short phrase. The confirm card is a second look, not a form. Live voice in the simulator uses this computer’s microphone, or a typed transcript or WAV. |
+| Business potential and safety | 10% | The buyer is the shop owner who finds shortages late. No payments and no customer accounts. Tokens stay on the server. See [Safety and data](#safety-and-data). |
 
 ## Why glasses, not a phone
 
@@ -74,9 +119,9 @@ The core path is a lens count, a Notion write-back, then a Telegram report. Voic
 
 The ring path does not need a microphone. Voice is an extra: hold the ring, or press Listen live on the shop page, and speak a count such as “thirty-eight, one damaged.” Live speech uses this computer’s microphone in Chrome or Edge, not the G2 headset. The simulator glasses microphone is not used. You can still type a transcript or attach a WAV; the same parser runs either way. The count is not written until you tap to confirm.
 
-## Run it
+## Run locally
 
-Node 22 or newer.
+Node 22 or newer. The public glasses page and mock API are linked at the top of this README. The commands below start the same app on this machine, which is what `npm run sim` and `npm run demo` need.
 
 ```bash
 npm install
@@ -170,6 +215,15 @@ RECOUNT_MODE=live npm run demo
 
 A live server posts one `sendMessage` and then one `sendDocument` to `TELEGRAM_CHAT_ID`. The document is the aisle workbook. The caption is the location and the UTC date, for example `Recount · Aisle B · 26 Nov 2026`. Mock mode writes that same workbook under `data/outbox/` and records the path on the single outbox message. After the send, the glasses hint is “Sheet sent to Telegram”.
 
+## Safety and data
+
+- **Tokens stay on the server.** `NOTION_TOKEN`, `TELEGRAM_BOT_TOKEN`, and `LLM_API_KEY` are read only from the Node process environment (`server/config.ts`). The glasses page and the shop WebView call `/api/*` only (`src/api.ts`). They never see those values.
+- **No OAuth in the WebView.** Notion is an internal integration on the server, not a Google (or other) login in the Even Hub page.
+- **Live mode fails closed.** `RECOUNT_MODE=live` will not start without `NOTION_TOKEN` and either `NOTION_DATABASE_ID` or `NOTION_PARENT_PAGE_ID` (`server/index.ts`). A bad Notion token raises an error on load or write; the server does not fall back to the mock shop (`server/store.ts`, `server/notion.ts`).
+- **The glasses app does not write or send without a confirm tap.** The first tap opens a confirm card; the second tap writes the count (`src/logic/machine.ts`, `src/glasses/session.ts`). A spoken count only fills that confirm card. The Telegram report is sent only when the wearer taps on the aisle summary.
+- **What is stored, and what is not.** A confirmed live count writes the quantity, variance, damaged count, time, status, and the worker’s name to the shop’s Notion row. The aisle report is one Telegram `sendMessage` and one `.xlsx` (`sendDocument`) to `TELEGRAM_CHAT_ID`. There are no payments and no customer accounts. The glasses app does not keep tokens or a copy of the aisle spreadsheet. Spoken audio is sent to the server only to parse a count, and only when a speech key is set.
+- **The public demo API is mock mode.** [https://recount-beryl.vercel.app/api/health](https://recount-beryl.vercel.app/api/health) serves the built-in twelve-item catalog. It has no Notion or Telegram keys.
+
 ## Judging
 
 | Criterion | Weight | What Recount does |
@@ -206,13 +260,11 @@ scripts/demo-flow.ts
 
 ## Pack and deploy
 
-The glasses app talks to a Recount Node server. Local `npm run dev` still uses [http://127.0.0.1:4187/api/health](http://127.0.0.1:4187/api/health). A packed headset build uses the same API on a public HTTPS origin, which is also in the `app.json` network whitelist:
+The glasses app talks to a Recount Node server. A packed headset build, and the [public glasses page](https://recount-beryl.vercel.app/glasses/?demo=1), use the mock API on the same Vercel origin as the site:
 
-- Live mock API: [https://recount-api.ahmardchain.workers.dev/api/health](https://recount-api.ahmardchain.workers.dev/api/health)
+- Live mock API: [https://recount-beryl.vercel.app/api/health](https://recount-beryl.vercel.app/api/health)
 
-That worker is the Recount server in mock mode (`server/worker.ts`, `wrangler.toml`): twelve shop items, the regex parser, and an in-memory Telegram outbox. Aisle reports on this host fall back to CSV rather than `.xlsx`, because the Worker build does not include the workbook library. It does not hold `NOTION_TOKEN`, `TELEGRAM_BOT_TOKEN`, or `LLM_API_KEY`. Live Notion and Telegram on this host would need those values, plus `NOTION_DATABASE_ID` or `NOTION_PARENT_PAGE_ID`, `TELEGRAM_CHAT_ID`, `RECOUNT_MODE=live`, and optionally the `LLM_*` settings.
-
-The marketing site at [https://recount-beryl.vercel.app](https://recount-beryl.vercel.app) is static and does not serve this API.
+That host is the Recount server in mock mode, as a Vercel Node function, so aisle reports are `.xlsx` workbooks. It serves twelve built-in shop items and the regex parser. It does not hold `NOTION_TOKEN`, `TELEGRAM_BOT_TOKEN`, or `LLM_API_KEY`. Live Notion and Telegram on this host would need those values, plus `NOTION_DATABASE_ID` or `NOTION_PARENT_PAGE_ID`, `TELEGRAM_CHAT_ID`, `RECOUNT_MODE=live`, and optionally the `LLM_*` settings. Local `npm run dev` still uses port 4187 (see [Run locally](#run-locally)). Both the Vercel origin and localhost are in the `app.json` network whitelist.
 
 To pack a headset build:
 
@@ -240,5 +292,5 @@ Recount was started 26 Nov 2026 during the Heads Up build week; pre-existing pie
 - Speech-to-text needs an OpenAI-compatible audio endpoint. Without a key, only a transcript is parsed.
 - The aisle file is an `.xlsx` workbook. If that writer fails, the same columns go out as a CSV file.
 - The glasses font is the firmware font. Copy stays in basic Latin. The simulator’s pixels are not a sign-off for legibility on the headset.
-- Network permission in `app.json` lists localhost for `npm run dev`, and `https://recount-api.ahmardchain.workers.dev` for a packed headset build. That public host is mock mode until Notion and Telegram keys are set on it.
+- Network permission in `app.json` lists localhost for `npm run dev`, and `https://recount-beryl.vercel.app` for a packed headset build and the public glasses page. That public host is mock mode until Notion and Telegram keys are set on it.
 - `libwebkit2gtk-4.1` is required to launch the simulator on Linux. It is not an npm dependency.

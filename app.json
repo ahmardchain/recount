@@ -14,7 +14,7 @@
         "http://localhost:4179",
         "http://127.0.0.1:4187",
         "http://localhost:4187",
-        "https://recount-api.ahmardchain.workers.dev"
+        "https://recount-beryl.vercel.app"
       ]
     },
     {
