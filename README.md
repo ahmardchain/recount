@@ -132,8 +132,10 @@ In a third terminal, once the glasses show the first item:
 npm run demo
 ```
 
-- Glasses and this page: [http://127.0.0.1:4179/?demo=1](http://127.0.0.1:4179/?demo=1)
-- API: [http://127.0.0.1:4187/api/health](http://127.0.0.1:4187/api/health)
+These local addresses work only on your machine while `npm run dev` and `npm run sim` are running. For the hosted version, use the links under [For judges](#for-judges).
+
+- Glasses and shop page: `http://127.0.0.1:4179/?demo=1`
+- API: `http://127.0.0.1:4187/api/health`
 - Simulator control plane: `http://127.0.0.1:9898`
 
 `npm run demo` drives the simulator from the Coke card through three counts, one skip, and the Telegram outbox. It writes `docs/screens/`. Those files are the glasses framebuffer with brightness, which the simulator stores in the alpha channel, drawn onto black so the text is visible. Restart the simulator before running the demo again. The `demo=1` query holds the loading card for a moment so that screen can be captured. Leave it off on a headset (`http://<lan-ip>:4179`).
