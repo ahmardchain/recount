@@ -1,5 +1,7 @@
 # Recount
 
+[![CI](https://github.com/ahmardchain/recount/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmardchain/recount/actions/workflows/ci.yml)
+
 Count a shelf without putting the box down.
 
 A worker in a small shop, pharmacy, café, or stockroom still counts with a clipboard. Both hands are on the boxes, the count is slow, and a shortage sits there until the owner notices it late.
