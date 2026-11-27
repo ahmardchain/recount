@@ -38,7 +38,7 @@ Notion uses a server-side internal integration, because Google OAuth does not wo
 | Field | Value |
 | --- | --- |
 | Repository | https://github.com/ahmardchain/recount |
-| Demo video | https://youtu.be/cBrX0zpWdnY — official Even Hub simulator, under two minutes. Script in `docs/DEMO_SCRIPT.md` |
+| Demo video | https://youtu.be/Hj2fdArDaIg — official Even Hub simulator, under two minutes. Script in `docs/DEMO_SCRIPT.md` |
 | Even Hub build | PLACEHOLDER — `.ehpk` only if the owner packs and uploads it |
 | Site | https://recount-beryl.vercel.app |
 | Live app server | Not deployed. Mock or live mode runs locally with `npm run dev` |

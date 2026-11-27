@@ -16,7 +16,7 @@ Recount is ring-first and hands-free. The count stays on the Even Realities G2 l
 
 Submitted on 26 Nov 2026 to the DoraHacks “Heads Up: Even Realities Hackathon”, Track 04 (AI Assistants & Work) and Best Telegram.
 
-- Demo video: [https://youtu.be/cBrX0zpWdnY](https://youtu.be/cBrX0zpWdnY)
+- Demo video: [https://youtu.be/Hj2fdArDaIg](https://youtu.be/Hj2fdArDaIg)
 - Site: [https://recount-beryl.vercel.app](https://recount-beryl.vercel.app)
 
 The glasses page is an Even Hub app. It uses `@evenrealities/even_hub_sdk` **0.0.16** (Even App 2.2.10 or newer) and is exercised in `@evenrealities/evenhub-simulator` **0.9.5**. The phone WebView never talks to Notion, Telegram, or a model vendor. A small Node server holds those tokens.
