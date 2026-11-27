@@ -26,13 +26,12 @@ Aisle card from the Even Hub simulator 0.9.5, at the G2 display size of 576×288
 
 ## For judges
 
-About 4 minutes in total:
+About 3 minutes in total, not counting the [demo video](https://youtu.be/Hj2fdArDaIg) (1 min 37 s, official Even Hub simulator, with captions):
 
 1. **(30 s)** Open the [site](https://recount-beryl.vercel.app). This is the marketing page, with live Telegram phone photos further down.
 2. **(1 min)** Click **Try the live demo**, or open the [glasses page](https://recount-beryl.vercel.app/glasses/?demo=1) directly. That is the Even Hub app and the shop view beside it, talking to the mock API on the same origin. It is a browser page, not a G2 headset run. Ring gestures need the Even Hub simulator, which you can start locally (see [Run locally](#run-locally)).
 3. **(10 s)** Open [https://recount-beryl.vercel.app/api/health](https://recount-beryl.vercel.app/api/health). It should return `ok: true` and `mode: "mock"` (sample shop data, no Notion or Telegram keys on this host).
-4. **(1 min 37 s)** Watch the [demo video](https://youtu.be/Hj2fdArDaIg) (official Even Hub simulator, with captions).
-5. **(1 min)** Look at the [proof table](#proof) and the official [criteria](#official-criteria) below.
+4. **(1 min)** Look at the [proof table](#proof) and the official [criteria](#official-criteria) below.
 
 ### Live links
 
