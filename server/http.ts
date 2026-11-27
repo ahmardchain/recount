@@ -33,6 +33,7 @@ export function createRecountServer(options: { env?: NodeJS.ProcessEnv; persist?
   const chat = openAiChat(config)
   const pending = new Map<string, PendingUndo>()
   let queuedVoice: { transcript?: string; wavBase64?: string } | null = null
+  let listening = false
 
   const server = createServer(async (req, res) => {
     try {
@@ -189,6 +190,16 @@ export function createRecountServer(options: { env?: NodeJS.ProcessEnv; persist?
       writeJson(res, 200, queued ?? { transcript: null, wavBase64: null })
       return
     }
+    if (req.method === "GET" && path === "/api/dev/listening") {
+      writeJson(res, 200, { active: listening })
+      return
+    }
+    if (req.method === "POST" && path === "/api/dev/listening") {
+      const body = await readJson(req)
+      listening = body.active === true
+      writeJson(res, 200, { active: listening })
+      return
+    }
     if (req.method === "POST" && path === "/api/report") {
       const body = await readJson(req)
       const location = stringField(body, "location") || "Aisle B"
@@ -236,6 +247,7 @@ export function createRecountServer(options: { env?: NodeJS.ProcessEnv; persist?
       for (const row of pending.values()) clearTimeout(row.timer)
       pending.clear()
       queuedVoice = null
+      listening = false
       await store.reset()
       sink.reset()
       writeJson(res, 200, { ok: true })

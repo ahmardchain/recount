@@ -6,6 +6,12 @@ Count a shelf without putting the box down.
 
 A worker in a small shop, pharmacy, café, or stockroom still counts with a clipboard. Both hands are on the boxes, the count is slow, and a shortage sits there until the owner notices it late.
 
+The cost of those gaps is well documented:
+
+- In *Retail Out-of-Stocks: A Worldwide Examination of Extent, Causes and Consumer Responses* ([Gruen, Corsten and Bharadwaj, 2002](https://www.supplychain247.com/images/pdfs/GMA_2002_Worldwide_OOS_Study.pdf)), the average out-of-stock rate across 40 studies worldwide was 8.3 percent, and “a typical retailer loses about 4 percent of sales due to having items out-of-stock.”
+- DeHoratius and Raman (2008), in *Management Science*, examined nearly 370,000 inventory records from 37 stores of one retailer and found 65% to be inaccurate: the recorded quantity did not match the quantity found in the store. ([doi:10.1287/mnsc.1070.0789](https://doi.org/10.1287/mnsc.1070.0789))
+- IHL Group’s 2026 Inventory Distortion Study (July 2026) put the combined cost of out-of-stocks and overstocks at $1.7 trillion globally, equal to 6.2% of global retail sales. Empty shelves accounted for $690.9 billion. ([IHL research findings](https://www.ihlservices.com/news/ihl-research-findings/))
+
 Recount is ring-first and hands-free. The count stays on the Even Realities G2 lens, a tap writes it back to Notion, and one more tap at the end of the aisle sends the owner a Telegram report. The Even R1 ring changes the count. That path does not need a microphone. Shortages are listed first, then the same aisle goes out as a spreadsheet.
 
 Submitted on 26 Nov 2026 to the DoraHacks “Heads Up: Even Realities Hackathon”, Track 04 (AI Assistants & Work) and Best Telegram.
@@ -14,6 +20,10 @@ Submitted on 26 Nov 2026 to the DoraHacks “Heads Up: Even Realities Hackathon�
 - Site: [https://recount-beryl.vercel.app](https://recount-beryl.vercel.app)
 
 The glasses page is an Even Hub app. It uses `@evenrealities/even_hub_sdk` **0.0.16** (Even App 2.2.10 or newer) and is exercised in `@evenrealities/evenhub-simulator` **0.9.5**. The phone WebView never talks to Notion, Telegram, or a model vendor. A small Node server holds those tokens.
+
+![Aisle card on the Even Hub simulator, 576 by 288: Shelf B3, Coke 50cl, expected 24, count 24](docs/screens/02-item.png)
+
+Aisle card from the Even Hub simulator 0.9.5, at the G2 display size of 576×288 monochrome. Captured during the official demo flow. This is the simulator, not a headset run.
 
 ## Live Telegram report
 
@@ -53,7 +63,7 @@ The core path is a lens count, a Notion write-back, then a Telegram report. Voic
 2. One card shows the shelf, the item, the expected quantity, and the count. Scroll the R1 ring to add or subtract one. Tap to open a confirm card. Tap again to write the count, the variance (counted minus expected), the time, and the counter’s name. A second tap inside 3 seconds undoes it. Double-tap skips the item. Hold the ring, or choose Speak, and a phrase such as “twelve” or “two boxes of six” becomes the number on that confirm card.
 3. The last card shows how many items were counted and the total variance. One tap sends the owner a Telegram `sendMessage`, then the aisle workbook with `sendDocument`. Shortages are listed before overs and exact matches. The glasses card then reads “Sheet sent to Telegram”.
 
-The ring path does not need a microphone. The simulator has no reliable mic, so the page can inject a transcript or a WAV file and run the same parser.
+The ring path does not need a microphone. Voice is an extra: hold the ring, or press Listen live on the shop page, and speak a count such as “thirty-eight, one damaged.” Live speech uses this computer’s microphone in Chrome or Edge, not the G2 headset. The simulator glasses microphone is not used. You can still type a transcript or attach a WAV; the same parser runs either way. The count is not written until you tap to confirm.
 
 ## Run it
 
@@ -189,7 +199,7 @@ Recount was started 26 Nov 2026 during the Heads Up build week; pre-existing pie
 
 ## Limitations
 
-- The simulator is not the headset. It has no IMU, camera, or location, and its microphone should not be trusted. Recount does not use IMU or location. Voice in the simulator goes through the transcript or WAV hook.
+- The simulator is not the headset. It has no IMU, camera, or location, and its glasses microphone should not be trusted. Recount does not use IMU or location. Live voice in the simulator uses this computer’s microphone on the shop page (Chrome or Edge), or a typed transcript or WAV; it is not a G2 hardware run.
 - Text-container events in SDK 0.0.16 do not carry a ring-versus-temple source. Scroll, tap, and double-tap from the ring and from either temple run the same count. A hold does include the source, and the server log prints it. The simulator itself reports the right temple for system events.
 - Double-tap during a count skips the item, so a worker does not leave the aisle by accident. Close stays on the system menu. After the report is sent, double-tap calls `shutDownPageContainer(1)`, which is the system exit dialog.
 - The OS may take a tap-then-hold for its own menu. Speak is also a menu item, and it listens for four seconds.

@@ -1,4 +1,5 @@
-import { getHealth, getInventory, getOutbox, postVoice, queueVoice, type Health } from "./api"
+import { getHealth, getInventory, getListening, getOutbox, postVoice, queueVoice, type Health } from "./api"
+import { startLiveListen, type LiveListenHandle } from "./live-speech"
 import { LOCATIONS } from "./logic/catalog"
 import type { ScreenCopy } from "./logic/copy"
 import { currentItem, type CountSession } from "./logic/machine"
@@ -65,7 +66,7 @@ export function mountStatus(actions: {
     </div>
     <section class="voice">
       <h2>Voice, for the simulator</h2>
-      <p class="fine">The simulator microphone is unreliable. Paste a transcript or a WAV. The count still waits for a tap before it is written.</p>
+      <p class="fine">Hold the ring and speak a count, such as “thirty-eight, one damaged.” Live speech uses this computer’s microphone, in Chrome or Edge, not the G2 headset. The simulator glasses microphone is not used. You can still type a transcript or attach a WAV. The count still waits for a tap before it is written.</p>
       <form id="voice-form">
         <label>
           Transcript
@@ -76,6 +77,7 @@ export function mountStatus(actions: {
           <input id="wav" name="wav" type="file" accept="audio/wav,.wav" />
         </label>
         <div class="actions">
+          <button type="button" id="live-listen">Listen live</button>
           <button type="submit">Show confirm card</button>
           <button type="button" id="queue">Queue for hold to speak</button>
         </div>
@@ -99,8 +101,11 @@ export function mountStatus(actions: {
   const transcript = required<HTMLInputElement>("#transcript")
   const wav = required<HTMLInputElement>("#wav")
   const form = required<HTMLFormElement>("#voice-form")
+  const liveButton = required<HTMLButtonElement>("#live-listen")
   let glasses = false
   let activeId: string | null = null
+  let live: LiveListenHandle | null = null
+  let ringListening = false
 
   form.addEventListener("submit", (event) => {
     event.preventDefault()
@@ -108,6 +113,10 @@ export function mountStatus(actions: {
   })
   required<HTMLButtonElement>("#queue").addEventListener("click", () => {
     void runVoice(true)
+  })
+  liveButton.addEventListener("click", () => {
+    if (live) endLive()
+    else beginLive("button")
   })
   locationSelect.addEventListener("change", () => {
     actions.switchLocation(locationSelect.value)
@@ -120,11 +129,13 @@ export function mountStatus(actions: {
   setInterval(() => {
     void refreshTable(locationSelect.value, activeId)
     void refreshOutbox()
+    if (!glasses) void syncRemoteListen()
   }, 2000)
 
   return {
     setGlasses(state, copy, connected) {
       glasses = connected
+      syncListenPhase(state.phase === "listening")
       required("#link-state").textContent = connected
         ? "Linked to the glasses page."
         : "Open this page in evenhub-simulator to drive the glasses."
@@ -142,6 +153,70 @@ export function mountStatus(actions: {
     setParse(text) {
       required("#parse").textContent = text
     },
+  }
+
+  function writeParse(text: string): void {
+    required("#parse").textContent = text
+  }
+
+  function beginLive(reason: "button" | "ring"): void {
+    if (live) return
+    const handle = startLiveListen({
+      onTranscript(text, isFinal) {
+        transcript.value = text
+        writeParse(isFinal ? `Heard: ${text}` : `Listening: ${text}`)
+        if (reason === "ring" || isFinal) {
+          void queueVoice({ transcript: text }).catch(() => undefined)
+        }
+      },
+      onError(message) {
+        writeParse(
+          message === "not-allowed"
+            ? "Microphone permission was denied on this page."
+            : `Live speech: ${message}`,
+        )
+      },
+      onEnd() {
+        live = null
+        liveButton.textContent = "Listen live"
+      },
+    })
+    if (!handle) {
+      writeParse("Live speech needs Chrome or Edge on this shop page. Type a count, or attach a WAV.")
+      return
+    }
+    live = handle
+    liveButton.textContent = "Stop listening"
+    writeParse(
+      reason === "ring"
+        ? "Ring is held. Speak the count into this computer."
+        : "Listening on this computer. Speak a count, then hold the ring or show the confirm card.",
+    )
+  }
+
+  function endLive(): void {
+    live?.stop()
+    live = null
+    liveButton.textContent = "Listen live"
+  }
+
+  function syncListenPhase(active: boolean): void {
+    if (active && !ringListening) {
+      ringListening = true
+      beginLive("ring")
+    } else if (!active && ringListening) {
+      ringListening = false
+      endLive()
+    }
+  }
+
+  async function syncRemoteListen(): Promise<void> {
+    try {
+      const status = await getListening()
+      syncListenPhase(status.active)
+    } catch {
+      // The shop page can still type a transcript if the flag cannot be read.
+    }
   }
 
   async function runVoice(queue: boolean): Promise<void> {

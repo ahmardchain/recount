@@ -111,6 +111,19 @@ describe("mock counter service", () => {
     assert.equal((await json<{ transcript: string | null }>("/api/dev/voice")).transcript, null)
   })
 
+  it("exposes a listening flag for live simulator speech", async () => {
+    const off = await json<{ active: boolean }>("/api/dev/listening")
+    assert.equal(off.active, false)
+    const on = await json<{ active: boolean }>("/api/dev/listening", { active: true })
+    assert.equal(on.active, true)
+    assert.equal((await json<{ active: boolean }>("/api/dev/listening")).active, true)
+    await json("/api/dev/listening", { active: false })
+    assert.equal((await json<{ active: boolean }>("/api/dev/listening")).active, false)
+    await json("/api/dev/listening", { active: true })
+    await json("/api/dev/reset", {})
+    assert.equal((await json<{ active: boolean }>("/api/dev/listening")).active, false)
+  })
+
   async function json<T = Record<string, unknown>>(path: string, body?: unknown): Promise<T> {
     const response = await fetch(`${base}${path}`, {
       method: body === undefined ? "GET" : "POST",

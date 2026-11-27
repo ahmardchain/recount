@@ -10,7 +10,7 @@ import {
   type EvenAppBridge,
   type EvenHubEvent,
 } from "@evenrealities/even_hub_sdk"
-import { getInventory, postCount, postReport, postUndo, postVoice, takeQueuedVoice } from "../api"
+import { getInventory, postCount, postReport, postUndo, postVoice, setListening, takeQueuedVoice } from "../api"
 import { screenCopy, screenLog, type ScreenCopy } from "../logic/copy"
 import {
   initialSession,
@@ -197,6 +197,7 @@ export class RecountSession {
       case "listen_start":
         this.pcm = []
         this.armListen()
+        void setListening(true).catch(() => undefined)
         try {
           await Promise.race([
             this.bridge.audioControl(true, AudioInputSource.Glasses),
@@ -209,10 +210,12 @@ export class RecountSession {
       case "listen_cancel":
         this.disarmListen()
         this.pcm = []
+        void setListening(false).catch(() => undefined)
         await this.closeMic()
         return
       case "listen_stop":
         this.disarmListen()
+        void setListening(false).catch(() => undefined)
         await this.closeMic()
         await this.finishVoice()
         return

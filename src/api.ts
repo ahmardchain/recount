@@ -72,6 +72,14 @@ export function takeQueuedVoice(): Promise<{ transcript: string | null; wavBase6
   return send("/api/dev/voice").then((response) => asJson(response))
 }
 
+export function setListening(active: boolean): Promise<void> {
+  return send("/api/dev/listening", { active }).then((response) => asJson(response)).then(() => undefined)
+}
+
+export function getListening(): Promise<{ active: boolean }> {
+  return send("/api/dev/listening").then((response) => asJson(response))
+}
+
 export function postReport(
   location: string,
   counter: string,
