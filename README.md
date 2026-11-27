@@ -16,17 +16,13 @@ Recount is ring-first and hands-free. The count stays on the Even Realities G2 l
 
 Submitted on 26 Nov 2026 to the DoraHacks “Heads Up: Even Realities Hackathon”, Track 04 (AI Assistants & Work) and Best Telegram.
 
-- Demo video: [https://youtu.be/Hj2fdArDaIg](https://youtu.be/Hj2fdArDaIg)
-- Site: [https://recount-beryl.vercel.app](https://recount-beryl.vercel.app)
-- Live glasses page: [https://recount-beryl.vercel.app/glasses/?demo=1](https://recount-beryl.vercel.app/glasses/?demo=1)
-- Live mock API: [https://recount-beryl.vercel.app/api/health](https://recount-beryl.vercel.app/api/health)
+Watch the [demo video](https://youtu.be/Hj2fdArDaIg), or jump to [For judges](#for-judges) for every live link.
 
 The glasses page is an Even Hub app. It uses `@evenrealities/even_hub_sdk` **0.0.16** (Even App 2.2.10 or newer) and is exercised in `@evenrealities/evenhub-simulator` **0.9.5**. The phone WebView never talks to Notion, Telegram, or a model vendor. A small Node server holds those tokens.
 
 ![Aisle card on the Even Hub simulator, 576 by 288: Shelf B3, Coke 50cl, expected 24, count 24](docs/screens/02-item.png)
 
 Aisle card from the Even Hub simulator 0.9.5, at the G2 display size of 576×288 monochrome. Captured during the official demo flow. This is the simulator, not a headset run.
-
 
 ## For judges
 
@@ -67,7 +63,7 @@ About 4 minutes in total:
 | Usefulness on G2 | 30% | Both hands stay on the stock. One item and one number on the lens; the R1 ring changes the count. That path does not need a microphone. |
 | Read and write | 25% | The aisle is read from Notion (or the built-in mock shop). A confirmed count is written back. The owner gets a Telegram `sendMessage`, shortages first, then the aisle `.xlsx` with `sendDocument`. |
 | Technical execution | 20% | SDK 0.0.16 page containers, a 300 ms ring debounce, a two-step confirm, a 3 s undo, and a parser with a deterministic fallback. A packable `.ehpk` (`npm run pack`), a live HTTPS API on the same Vercel origin as the site, 22 tests and GitHub Actions CI. Mock mode needs no keys. |
-| UX for display and voice | 15% | 576×288 monochrome. Scroll, tap, double-tap, and an optional short phrase. The confirm card is a second look, not a form. Live voice in the simulator uses this computer’s microphone, or a typed transcript or WAV. |
+| UX for display and voice | 15% | 576×288 monochrome. Scroll, tap, double-tap, and an optional short phrase. The confirm card is a second look, not a form. Live voice in the simulator uses your computer’s microphone, or a typed transcript or WAV. |
 | Business potential and safety | 10% | The buyer is the shop owner who finds shortages late. No payments and no customer accounts. Tokens stay on the server. See [Safety and data](#safety-and-data). |
 
 ## Why glasses, not a phone
@@ -91,10 +87,6 @@ The Recount bot in Telegram: the Aisle B alert and the aisle spreadsheet.
 
 The aisle spreadsheet opened on the owner's phone.
 
-![Telegram alert and aisle spreadsheet](docs/screens/telegram-sheet.png)
-
-The owner gets the shortfall text, then the aisle `.xlsx`.
-
 ## Screenshots
 
 Live frames from the official Even Hub simulator.
@@ -114,14 +106,14 @@ Live frames from the official Even Hub simulator.
 The core path is a lens count, a Notion write-back, then a Telegram report. Voice is optional.
 
 1. The glasses load one location from the Shop Inventory database. In mock mode that database is built in. With a Notion token, the same screen reads the live database.
-2. One card shows the shelf, the item, the expected quantity, and the count. Scroll the R1 ring to add or subtract one. Tap to open a confirm card. Tap again to write the count, the variance (counted minus expected), the time, and the counter’s name. A second tap inside 3 seconds undoes it. Double-tap skips the item. Hold the ring, or choose Speak, and a phrase such as “twelve” or “two boxes of six” becomes the number on that confirm card.
+2. One card shows the shelf, the item, the expected quantity, and the count. Scroll the R1 ring to add or subtract one. Tap to open a confirm card. Tap again to write the count, the variance (counted minus expected), the time, and the counter’s name. Tapping again within 3 seconds undoes it. Double-tap skips the item. Hold the ring, or choose Speak, and a phrase such as “twelve” or “two boxes of six” becomes the number on that confirm card.
 3. The last card shows how many items were counted and the total variance. One tap sends the owner a Telegram `sendMessage`, then the aisle workbook with `sendDocument`. Shortages are listed before overs and exact matches. The glasses card then reads “Sheet sent to Telegram”.
 
-The ring path does not need a microphone. Voice is an extra: hold the ring, or press Listen live on the shop page, and speak a count such as “thirty-eight, one damaged.” Live speech uses this computer’s microphone in Chrome or Edge, not the G2 headset. The simulator glasses microphone is not used. You can still type a transcript or attach a WAV; the same parser runs either way. The count is not written until you tap to confirm.
+The ring path does not need a microphone. Voice is an extra: hold the ring, or press Listen live on the shop page, and speak a count such as “thirty-eight, one damaged.” Live speech uses your computer’s microphone in Chrome or Edge, not the G2 headset. The simulator glasses microphone is not used. You can still type a transcript or attach a WAV; the same parser runs either way. The count is not written until you tap to confirm.
 
 ## Run locally
 
-Node 22 or newer. The public glasses page and mock API are linked at the top of this README. The commands below start the same app on this machine, which is what `npm run sim` and `npm run demo` need.
+Node 22 or newer. The public glasses page and mock API are linked under [For judges](#for-judges). The commands below start the same app on your machine, which is what `npm run sim` and `npm run demo` need.
 
 ```bash
 npm install
@@ -211,10 +203,6 @@ RECOUNT_MODE=live npm run demo
 
 `npm run demo` drives the same three-item aisle. In live mode it writes those counts to Notion and checks that exactly one Telegram alert was posted, with the spreadsheet attached.
 
-## Live proof
-
-A live server posts one `sendMessage` and then one `sendDocument` to `TELEGRAM_CHAT_ID`. The document is the aisle workbook. The caption is the location and the UTC date, for example `Recount · Aisle B · 26 Nov 2026`. Mock mode writes that same workbook under `data/outbox/` and records the path on the single outbox message. After the send, the glasses hint is “Sheet sent to Telegram”.
-
 ## Safety and data
 
 - **Tokens stay on the server.** `NOTION_TOKEN`, `TELEGRAM_BOT_TOKEN`, and `LLM_API_KEY` are read only from the Node process environment (`server/config.ts`). The glasses page and the shop WebView call `/api/*` only (`src/api.ts`). They never see those values.
@@ -247,14 +235,9 @@ scripts/demo-flow.ts
 | `npm run pack` | Typecheck, build the page against the live HTTPS API origin in `app.json`, and write `recount.ehpk` |
 | `npm run build && npm start` | Typecheck, build the page, serve it from the API |
 
-
 ## Pack and deploy
 
-The glasses app talks to a Recount Node server. A packed headset build, and the [public glasses page](https://recount-beryl.vercel.app/glasses/?demo=1), use the mock API on the same Vercel origin as the site:
-
-- Live mock API: [https://recount-beryl.vercel.app/api/health](https://recount-beryl.vercel.app/api/health)
-
-That host is the Recount server in mock mode, as a Vercel Node function, so aisle reports are `.xlsx` workbooks. It serves twelve built-in shop items and the regex parser. It does not hold `NOTION_TOKEN`, `TELEGRAM_BOT_TOKEN`, or `LLM_API_KEY`. Live Notion and Telegram on this host would need those values, plus `NOTION_DATABASE_ID` or `NOTION_PARENT_PAGE_ID`, `TELEGRAM_CHAT_ID`, `RECOUNT_MODE=live`, and optionally the `LLM_*` settings. Local `npm run dev` still uses port 4187 (see [Run locally](#run-locally)). Both the Vercel origin and localhost are in the `app.json` network whitelist.
+The glasses app talks to a Recount Node server. A packed headset build, and the [public glasses page](https://recount-beryl.vercel.app/glasses/?demo=1), use the [mock API](https://recount-beryl.vercel.app/api/health) on the same Vercel origin as the site. That host is the Recount server in mock mode, as a Vercel Node function, so aisle reports are `.xlsx` workbooks. It serves twelve built-in shop items and the regex parser. It does not hold `NOTION_TOKEN`, `TELEGRAM_BOT_TOKEN`, or `LLM_API_KEY`. Live Notion and Telegram on this host would need those values, plus `NOTION_DATABASE_ID` or `NOTION_PARENT_PAGE_ID`, `TELEGRAM_CHAT_ID`, `RECOUNT_MODE=live`, and optionally the `LLM_*` settings. Local `npm run dev` still uses port 4187 (see [Run locally](#run-locally)). Both the Vercel origin and localhost are in the `app.json` network whitelist.
 
 To pack a headset build:
 
@@ -271,7 +254,7 @@ Recount was started 26 Nov 2026 during the Heads Up build week; pre-existing pie
 
 ## Limitations
 
-- The simulator is not the headset. It has no IMU, camera, or location, and its glasses microphone should not be trusted. Recount does not use IMU or location. Live voice in the simulator uses this computer’s microphone on the shop page (Chrome or Edge), or a typed transcript or WAV; it is not a G2 hardware run.
+- The simulator is not the headset. It has no IMU, camera, or location, and its glasses microphone should not be trusted. Recount does not use IMU or location. Live voice in the simulator uses your computer’s microphone on the shop page (Chrome or Edge), or a typed transcript or WAV; it is not a G2 hardware run.
 - Text-container events in SDK 0.0.16 do not carry a ring-versus-temple source. Scroll, tap, and double-tap from the ring and from either temple run the same count. A hold does include the source, and the server log prints it. The simulator itself reports the right temple for system events.
 - Double-tap during a count skips the item, so a worker does not leave the aisle by accident. Close stays on the system menu. After the report is sent, double-tap calls `shutDownPageContainer(1)`, which is the system exit dialog.
 - The OS may take a tap-then-hold for its own menu. Speak is also a menu item, and it listens for four seconds.
