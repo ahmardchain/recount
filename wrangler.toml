@@ -1,0 +1,4 @@
+name = "recount-api"
+main = "server/worker.ts"
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]

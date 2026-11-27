@@ -17,8 +17,10 @@ export interface OutboxMessage {
   sheetFile?: string
 }
 
+const apiOrigin = String(import.meta.env.VITE_RECOUNT_API ?? "").replace(/\/$/, "")
+
 async function send(path: string, body?: unknown): Promise<Response> {
-  const response = await fetch(path, {
+  const response = await fetch(`${apiOrigin}${path}`, {
     method: body === undefined ? "GET" : "POST",
     headers: body === undefined ? undefined : { "content-type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),

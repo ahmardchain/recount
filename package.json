@@ -14,13 +14,15 @@
     "typecheck": "tsc --noEmit",
     "seed": "tsx scripts/seed.ts",
     "sim": "node node_modules/@evenrealities/evenhub-simulator/bin/index.js http://127.0.0.1:4179/?demo=1 --automation-port 9898 --no-glow",
-    "demo": "tsx scripts/demo-flow.ts"
+    "demo": "tsx scripts/demo-flow.ts",
+    "pack": "tsx scripts/pack.ts"
   },
   "dependencies": {
     "@evenrealities/even_hub_sdk": "0.0.16",
     "exceljs": "4.4.0"
   },
   "devDependencies": {
+    "@evenrealities/evenhub-cli": "0.2.0",
     "@evenrealities/evenhub-simulator": "0.9.5",
     "@types/node": "22.19.1",
     "tsx": "4.23.15",

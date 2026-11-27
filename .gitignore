@@ -5,3 +5,5 @@ data
 *.ehpk
 .DS_Store
 *.log
+.vercel
+.wrangler

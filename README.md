@@ -200,7 +200,28 @@ scripts/demo-flow.ts
 | `npm run sim` | Simulator against the page, automation on port 9898 |
 | `npm run demo` | Count three Aisle B items. Mock mode files the report and the spreadsheet locally. Live mode writes Notion and sends one Telegram alert plus one workbook. |
 | `npm run seed` | Create the Notion database under `NOTION_PARENT_PAGE_ID` when `NOTION_DATABASE_ID` is empty |
+| `npm run pack` | Typecheck, build the page against the live HTTPS API origin in `app.json`, and write `recount.ehpk` |
 | `npm run build && npm start` | Typecheck, build the page, serve it from the API |
+
+
+## Pack and deploy
+
+The glasses app talks to a Recount Node server. Local `npm run dev` still uses [http://127.0.0.1:4187/api/health](http://127.0.0.1:4187/api/health). A packed headset build uses the same API on a public HTTPS origin, which is also in the `app.json` network whitelist:
+
+- Live mock API: [https://recount-api.ahmardchain.workers.dev/api/health](https://recount-api.ahmardchain.workers.dev/api/health)
+
+That worker is the Recount server in mock mode (`server/worker.ts`, `wrangler.toml`): twelve shop items, the regex parser, and an in-memory Telegram outbox. Aisle reports on this host fall back to CSV rather than `.xlsx`, because the Worker build does not include the workbook library. It does not hold `NOTION_TOKEN`, `TELEGRAM_BOT_TOKEN`, or `LLM_API_KEY`. Live Notion and Telegram on this host would need those values, plus `NOTION_DATABASE_ID` or `NOTION_PARENT_PAGE_ID`, `TELEGRAM_CHAT_ID`, `RECOUNT_MODE=live`, and optionally the `LLM_*` settings.
+
+The marketing site at [https://recount-beryl.vercel.app](https://recount-beryl.vercel.app) is static and does not serve this API.
+
+To pack a headset build:
+
+```bash
+npm install
+npm run pack
+```
+
+`npm run pack` typechecks, builds the page with `VITE_RECOUNT_API` set to the HTTPS origin from `app.json`, and runs `evenhub pack app.json dist -o recount.ehpk` (Even Hub CLI 0.2.0). The `.ehpk` file is gitignored. Install or upload it with the Even Hub CLI (`evenhub create` / `evenhub upload`) or Even’s app tools. To use a different host, put that origin in the network whitelist (keep the localhost entries) and pack again.
 
 ## Built during the hackathon
 
@@ -219,5 +240,5 @@ Recount was started 26 Nov 2026 during the Heads Up build week; pre-existing pie
 - Speech-to-text needs an OpenAI-compatible audio endpoint. Without a key, only a transcript is parsed.
 - The aisle file is an `.xlsx` workbook. If that writer fails, the same columns go out as a CSV file.
 - The glasses font is the firmware font. Copy stays in basic Latin. The simulator’s pixels are not a sign-off for legibility on the headset.
-- Network permission in `app.json` lists localhost for this repo. A headset build has to add the server’s origin before `evenhub pack`.
+- Network permission in `app.json` lists localhost for `npm run dev`, and `https://recount-api.ahmardchain.workers.dev` for a packed headset build. That public host is mock mode until Notion and Telegram keys are set on it.
 - `libwebkit2gtk-4.1` is required to launch the simulator on Linux. It is not an npm dependency.
