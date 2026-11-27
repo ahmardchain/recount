@@ -30,7 +30,7 @@ Aisle card from the Even Hub simulator 0.9.5, at the G2 display size of 576×288
 
 ## For judges
 
-### A 60-second path
+A 60-second path:
 
 1. Open the [site](https://recount-beryl.vercel.app). This is the marketing page, with live Telegram phone photos further down.
 2. Click **Try the live demo**, or open the [glasses page](https://recount-beryl.vercel.app/glasses/?demo=1) directly. That is the Even Hub app and the shop view beside it, talking to the mock API on the same origin. It is a browser page, not a G2 headset run. Ring gestures need the Even Hub simulator, which you can start locally (see [Run locally](#run-locally)).
@@ -66,7 +66,7 @@ Aisle card from the Even Hub simulator 0.9.5, at the G2 display size of 576×288
 | --- | --- | --- |
 | Usefulness on G2 | 30% | Both hands stay on the stock. One item and one number on the lens; the R1 ring changes the count. That path does not need a microphone. |
 | Read and write | 25% | The aisle is read from Notion (or the built-in mock shop). A confirmed count is written back. The owner gets a Telegram `sendMessage`, shortages first, then the aisle `.xlsx` with `sendDocument`. |
-| Technical execution | 20% | SDK 0.0.16, a packable `.ehpk` (`npm run pack`), a live HTTPS API on the same Vercel origin as the site, 22 tests and GitHub Actions CI. Mock mode needs no keys. |
+| Technical execution | 20% | SDK 0.0.16 page containers, a 300 ms ring debounce, a two-step confirm, a 3 s undo, and a parser with a deterministic fallback. A packable `.ehpk` (`npm run pack`), a live HTTPS API on the same Vercel origin as the site, 22 tests and GitHub Actions CI. Mock mode needs no keys. |
 | UX for display and voice | 15% | 576×288 monochrome. Scroll, tap, double-tap, and an optional short phrase. The confirm card is a second look, not a form. Live voice in the simulator uses this computer’s microphone, or a typed transcript or WAV. |
 | Business potential and safety | 10% | The buyer is the shop owner who finds shortages late. No payments and no customer accounts. Tokens stay on the server. See [Safety and data](#safety-and-data). |
 
@@ -223,16 +223,6 @@ A live server posts one `sendMessage` and then one `sendDocument` to `TELEGRAM_C
 - **The glasses app does not write or send without a confirm tap.** The first tap opens a confirm card; the second tap writes the count (`src/logic/machine.ts`, `src/glasses/session.ts`). A spoken count only fills that confirm card. The Telegram report is sent only when the wearer taps on the aisle summary.
 - **What is stored, and what is not.** A confirmed live count writes the quantity, variance, damaged count, time, status, and the worker’s name to the shop’s Notion row. The aisle report is one Telegram `sendMessage` and one `.xlsx` (`sendDocument`) to `TELEGRAM_CHAT_ID`. There are no payments and no customer accounts. The glasses app does not keep tokens or a copy of the aisle spreadsheet. Spoken audio is sent to the server only to parse a count, and only when a speech key is set.
 - **The public demo API is mock mode.** [https://recount-beryl.vercel.app/api/health](https://recount-beryl.vercel.app/api/health) serves the built-in twelve-item catalog. It has no Notion or Telegram keys.
-
-## Judging
-
-| Criterion | Weight | What Recount does |
-| --- | --- | --- |
-| Usefulness on G2 | 30% | The count happens while both hands stay on the stock. One item, one number, the controls on the same card. |
-| Read and write | 25% | The aisle is read from Notion. Each confirmed count is written back. The owner receives the variance on Telegram, shortages first, and the aisle spreadsheet in the next message. |
-| Technical | 20% | SDK 0.0.16 page containers, a 300 ms ring debounce, a two-step confirm, a 3 s undo, and a provider-shaped parser with a deterministic fallback. Mock mode needs no keys. |
-| UX | 15% | 576×288 monochrome text. Scroll, tap, double-tap, and a short phrase. The confirm card is a second look, not a form. |
-| Business and safety | 10% | The buyer is the shop owner who finds shortages late. No payments, no customer data, no OAuth in the WebView. Tokens stay on the server. The worker’s name is the only identity stored on the row. |
 
 ## Layout
 
