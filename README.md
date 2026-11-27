@@ -2,14 +2,32 @@
 
 Count a shelf without putting the box down.
 
-A worker in a small shop, pharmacy, café, or stockroom still counts with a clipboard. Both hands are on the boxes, the count is slow, and a shortage sits there until the owner notices it late. Recount puts one shelf item at a time on Even Realities G2 glasses. The Even R1 ring changes the count. One tap confirms it. At the end of the aisle, one more tap sends the owner a Telegram message with the short items first, then the same aisle as a spreadsheet.
+A worker in a small shop, pharmacy, café, or stockroom still counts with a clipboard. Both hands are on the boxes, the count is slow, and a shortage sits there until the owner notices it late.
 
-The glasses page is an Even Hub app. It uses `@evenrealities/even_hub_sdk` **0.0.16** (Even App 2.2.10 or newer) and is exercised in `@evenrealities/evenhub-simulator` **0.9.5**. The phone WebView never talks to Notion, Telegram, or a model vendor. A small Node server holds those tokens.
+Recount is ring-first and hands-free. The count stays on the Even Realities G2 lens, a tap writes it back to Notion, and one more tap at the end of the aisle sends the owner a Telegram report. The Even R1 ring changes the count. That path does not need a microphone. Shortages are listed first, then the same aisle goes out as a spreadsheet.
 
-This is an entry for the DoraHacks “Heads Up: Even Realities Hackathon”, Track 04 (AI Assistants & Work), also aimed at Best Telegram. The DoraHacks BUIDL has not been submitted yet.
+Submitted on 26 Nov 2026 to the DoraHacks “Heads Up: Even Realities Hackathon”, Track 04 (AI Assistants & Work) and Best Telegram.
 
 - Demo video: [https://youtu.be/cBrX0zpWdnY](https://youtu.be/cBrX0zpWdnY)
 - Site: [https://recount-beryl.vercel.app](https://recount-beryl.vercel.app)
+
+The glasses page is an Even Hub app. It uses `@evenrealities/even_hub_sdk` **0.0.16** (Even App 2.2.10 or newer) and is exercised in `@evenrealities/evenhub-simulator` **0.9.5**. The phone WebView never talks to Notion, Telegram, or a model vendor. A small Node server holds those tokens.
+
+## Live Telegram report
+
+From the live run on 26 Nov 2026: the owner’s phone received the Aisle B alert, then the aisle `.xlsx`.
+
+<img src="docs/screens/telegram-phone.jpg" alt="The Recount bot in Telegram on a phone: the Aisle B alert and the aisle spreadsheet" width="320">
+
+The Recount bot in Telegram: the Aisle B alert and the aisle spreadsheet.
+
+<img src="docs/screens/spreadsheet-phone.jpg" alt="The aisle spreadsheet opened on the owner's phone" width="320">
+
+The aisle spreadsheet opened on the owner's phone.
+
+![Telegram alert and aisle spreadsheet](docs/screens/telegram-sheet.png)
+
+The owner gets the shortfall text, then the aisle `.xlsx`.
 
 ## Screenshots
 
@@ -25,19 +43,9 @@ Live frames from the official Even Hub simulator.
 | ![Aisle summary: 3 counted, variance −5](docs/screens/aisle-summary.png) | ![Glasses card: Sheet sent to Telegram](docs/screens/sheet-sent.png) |
 | Three counted, oats skipped, variance −5. | The glasses confirm the spreadsheet went out. |
 
-![Telegram alert and aisle spreadsheet](docs/screens/telegram-sheet.png)
-
-The owner gets the shortfall text, then the aisle `.xlsx`.
-
-<img src="docs/screens/telegram-phone.jpg" alt="The Recount bot in Telegram on a phone: the Aisle B alert and the aisle spreadsheet" width="320">
-
-The same alert and spreadsheet on the owner's phone, from the live run on 26 Nov 2026.
-
-<img src="docs/screens/spreadsheet-phone.jpg" alt="The aisle spreadsheet opened on the owner's phone" width="320">
-
-The aisle spreadsheet opened on the owner's phone.
-
 ## How it works
+
+The core path is a lens count, a Notion write-back, then a Telegram report. Voice is optional.
 
 1. The glasses load one location from the Shop Inventory database. In mock mode that database is built in. With a Notion token, the same screen reads the live database.
 2. One card shows the shelf, the item, the expected quantity, and the count. Scroll the R1 ring to add or subtract one. Tap to open a confirm card. Tap again to write the count, the variance (counted minus expected), the time, and the counter’s name. A second tap inside 3 seconds undoes it. Double-tap skips the item. Hold the ring, or choose Speak, and a phrase such as “twelve” or “two boxes of six” becomes the number on that confirm card.
@@ -179,7 +187,6 @@ Recount was started 26 Nov 2026 during the Heads Up build week; pre-existing pie
 
 ## Limitations
 
-- This copy has not been deployed, packed for Even Hub, or sent to DoraHacks.
 - The simulator is not the headset. It has no IMU, camera, or location, and its microphone should not be trusted. Recount does not use IMU or location. Voice in the simulator goes through the transcript or WAV hook.
 - Text-container events in SDK 0.0.16 do not carry a ring-versus-temple source. Scroll, tap, and double-tap from the ring and from either temple run the same count. A hold does include the source, and the server log prints it. The simulator itself reports the right temple for system events.
 - Double-tap during a count skips the item, so a worker does not leave the aisle by accident. Close stays on the system menu. After the report is sent, double-tap calls `shutDownPageContainer(1)`, which is the system exit dialog.
